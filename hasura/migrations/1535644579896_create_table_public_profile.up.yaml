@@ -1,0 +1,9 @@
+- args:
+    sql: CREATE TABLE public."profile"("id" serial NOT NULL, "name" text NOT NULL,
+      "address" text NOT NULL, "lat" numeric , "lng" numeric , PRIMARY KEY ("id")
+      );
+  type: run_sql
+- args:
+    name: profile
+    schema: public
+  type: add_existing_table_or_view
