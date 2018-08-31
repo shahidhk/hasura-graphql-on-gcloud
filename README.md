@@ -34,18 +34,37 @@ gcloud container clusters create hge-k8s \
       --num-nodes 1
 ```
 
-## 4. Configure and deploy GraphQL Engine
+## 4. Configure a service account
 
 Create a service account and download the json file by following [this
-guide](https://cloud.google.com/sql/docs/postgres/connect-kubernetes-engine#2_create_a_service_account).
+guide](https://cloud.google.com/sql/docs/postgres/connect-kubernetes-engine#2_create_a_service_account)
+or by executing the commands below:
+
+Create a service account:
+```bash
+gcloud iam service-accounts create hge-sql-sa \
+      --display-name hge-sql-sa
+```
+
+Grant required roles to this service account (replace `[PROJECT-ID]` with your
+project id):
+```bash
+gcloud projects add-iam-policy-binding [PROJECT-ID] \
+    --member serviceAccount:hge-sql-sa@[PROJECT-ID].iam.gserviceaccount.com \
+    --role roles/cloudsql.admin
+```
+
+Download a json key file:
+```json
+gcloud iam service-accounts keys create key.json \
+  --iam-account hge-sql-sa@[PROJECT-ID].iam.gserviceaccount.com
+```
 
 Create a k8s secret with this service account:
 ```bash
 kubectl create secret generic cloudsql-instance-credentials \
-    --from-file=credentials.json=[PROXY_KEY_FILE_PATH]
+    --from-file=credentials.json=key.json
 ```
-
-Replace `[PROXY_KEY_FILE_PATH]` with the filename of the download json.
 
 Create another secret with the database user and password
 (Use the `[PASSWORD]` noted earlier):
@@ -53,6 +72,8 @@ Create another secret with the database user and password
 kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=postgres --from-literal=password=[PASSWORD]
 ```
+
+## 5. Configure and deploy GraphQL Engine
 
 Get the `INSTANCE_CONNECTION_NAME`:
 ```bash
@@ -94,7 +115,7 @@ Open the console by navigating the the external IP in a browser.
 
 Note down this IP as `HGE_IP`.
 
-## 5. Create table
+## 6. Create a sample table
 
 Create the table using the console:
 
@@ -110,58 +131,13 @@ lat: Numeric, Nullable
 lng: Numeric, Nullable
 ```
 
-## 6. Create a Google Cloud Function
-
-We are going to use Google Maps API in our cloud function.
-
-Enable Google Maps API and get an API key (we'll call it `GMAPS_API_KEY`) following [this
-guide](https://developers.google.com/maps/documentation/geocoding/start?hl=el#auth)
-
-Check the `Places` box to get access to Geocoding API.
-
-We'll follow [this guide](https://cloud.google.com/functions/docs/quickstart)
-and create a Cloud Function with NodeJS 8. 
+## 7. Create a Google Cloud Function
 
 ```bash
-gcloud components update &&
+gcloud components update && \
 gcloud components install beta
 ```
 
-Goto the `cloudfunction` directory:
+Choose one the following environments:
 
-```bash
-cd cloudfunction
-```
-
-Edit `.env.yaml` and add values for the following as shown:
-```yaml
-# .env.yaml
-GMAPS_API_KEY: '[GMAPS_API_KEY]'
-HASURA_GRAPHQL_ENGINE_URL: 'http://[HGE_IP]/v1alpha1/graphql'
-```
-
-```bash
-gcloud beta functions deploy trigger \
-       --runtime nodejs8 \
-       --trigger-http \
-       --region asia-south1 \
-       --env-vars-file .env.yaml
-```
-
-Get the trigger URL:
-```yaml
-httpsTrigger:
-  url: https://asia-south1-hasura-test.cloudfunctions.net/trigger
-```
-
-Goto `HGE_IP` on browser, `Events -> Add Trigger` and create a new trigger:
-```
-Trigger name: profile_change
-Schema/Table: public/profile
-Operations: Insert
-Webhook URL: [Trigger URL]
-```
-
-Once the trigger is created, goto `Data -> profile -> Insert row` and add a new
-profile with name and address, save. Goto `Browse rows` tabs to see lat and lng
-updated, by the cloud function.
+- [`nodejs-echo`](cloudfunction/nodejs-echo)
