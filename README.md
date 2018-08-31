@@ -99,6 +99,10 @@ Note down this IP as `HGE_IP`.
 Create the table using the console:
 
 ```
+Table name: profile
+
+Columns:
+
 id: Integer auto-increment
 name: Text
 address: Text
