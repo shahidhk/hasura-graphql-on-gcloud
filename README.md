@@ -5,7 +5,6 @@ Hasura GraphQL Engine on Google Cloud
 
 1. Google cloud account with billing enabled
 2. `gcloud` CLI
-3. `hasura` CLI
 
 ## 1. Create a Google Cloud Project
 
@@ -25,7 +24,7 @@ gcloud sql users set-password postgres no-host --instance=hge-pg \
        --password=[PASSWORD]
 ```
 
-Make a note of the password.
+Make a note of the `[PASSWORD]`.
 
 ## 3. Create a Kubernetes cluster
 
@@ -48,13 +47,12 @@ kubectl create secret generic cloudsql-instance-credentials \
 
 Replace `[PROXY_KEY_FILE_PATH]` with the filename of the download json.
 
-Create another secret with the database user and password:
+Create another secret with the database user and password
+(Use the `[PASSWORD]` noted earlier):
 ```bash
 kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=postgres --from-literal=password=[PASSWORD]
 ```
-
-Use the `[PASSWORD]` noted earlier.
 
 Get the `INSTANCE_CONNECTION_NAME`:
 ```bash
@@ -96,24 +94,16 @@ Open the console by navigating the the external IP in a browser.
 
 Note down this IP as `HGE_IP`.
 
-## 5. Apply migrations
+## 5. Create table
 
-Now, apply migrations to get the database schema and configuration.
+Create the table using the console:
 
-Change to `hasura` directory:
-```bash
-cd hasura
 ```
-
-Edit `config.yaml` and change `endpoint`:
-```yaml
-# config.yaml
-endpoint: http://[HGE_IP]
-```
-
-Apply the migrations:
-```bash
-hasura migration apply
+id: Integer auto-increment
+name: Text
+address: Text
+lat: Numeric, Nullable
+lng: Numeric, Nullable
 ```
 
 ## 6. Create a Google Cloud Function
@@ -122,6 +112,8 @@ We are going to use Google Maps API in our cloud function.
 
 Enable Google Maps API and get an API key (we'll call it `GMAPS_API_KEY`) following [this
 guide](https://developers.google.com/maps/documentation/geocoding/start?hl=el#auth)
+
+Check the `Places` box to get access to Geocoding API.
 
 We'll follow [this guide](https://cloud.google.com/functions/docs/quickstart)
 and create a Cloud Function with NodeJS 8. 
