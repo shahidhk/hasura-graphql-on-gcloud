@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
         - name: graphql-engine
-          image: hasura/graphql-engine:pull329-59f0a51
+          image: hasura/graphql-engine:v1.0.0-alpha34
           ports:
             - containerPort: 8080
           # The following environment variables will contain the database host,
