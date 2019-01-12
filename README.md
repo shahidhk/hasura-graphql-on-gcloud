@@ -39,6 +39,13 @@ gcloud container clusters create hge-k8s \
 Create a service account and download the json file by following [this
 guide](https://cloud.google.com/sql/docs/postgres/connect-kubernetes-engine#2_create_a_service_account).
 
+Or if you didn't read that guide, at least ensure you:
+
+1. Enable [Cloud SQL Admin API](https://console.developers.google.com/apis/api/sqladmin.googleapis.com/) for your project
+2. Create a new [Services Account](https://console.cloud.google.com/iam-admin/serviceaccounts/)
+3. Select `Cloud SQL Admin` as the role
+4. Click `Create Key` to download the json file
+
 Create a k8s secret with this service account:
 ```bash
 kubectl create secret generic cloudsql-instance-credentials \
