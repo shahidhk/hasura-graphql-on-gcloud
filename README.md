@@ -48,7 +48,7 @@ Or if you didn't read that guide, at least ensure you:
 
 Create a k8s secret with this service account:
 ```bash
-kubectl create secret generic cloudsql-instance-credentials \
+kubectl create secret generic cloudsql-db-credentials \
     --from-file=credentials.json=[PROXY_KEY_FILE_PATH]
 ```
 
